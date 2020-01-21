@@ -2,7 +2,6 @@
 " Language:     asciidoctor
 " Maintainer:   Maxim Kim <habamax@gmail.com>
 " Filenames:    *.adoc
-" vim: set noet
 
 if exists("b:current_syntax")
 	finish
@@ -248,8 +247,8 @@ hi def link asciidoctorUrl                   Underlined
 hi def link asciidoctorUrlAuto               Underlined
 hi def link asciidoctorUrlDescription        Constant
 
-hi def link asciidoctorLink                  PreProc
-hi def link asciidoctorAnchor                PreProc
+hi def link asciidoctorLink                  Underlined
+hi def link asciidoctorAnchor                Underlined
 hi def link asciidoctorAttribute             Identifier
 hi def link asciidoctorCode                  Constant
 hi def link asciidoctorOption                Identifier
@@ -280,3 +279,4 @@ let b:current_syntax = "asciidoctor"
 if main_syntax ==# 'asciidoctor'
 	unlet main_syntax
 endif
+" vim: set noet
