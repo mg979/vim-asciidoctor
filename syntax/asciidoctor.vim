@@ -39,7 +39,7 @@ syn match asciidoctorPageBreak "^<<<\+\s*$"
 
 syn cluster asciidoctorBlock contains=asciidoctorTitle,asciidoctorH1,asciidoctorH2,asciidoctorH3,asciidoctorH4,asciidoctorH5,asciidoctorH6,asciidoctorBlockquote,asciidoctorListMarker,asciidoctorOrderedListMarker,asciidoctorCodeBlock,asciidoctorAdmonition,asciidoctorAdmonitionBlock
 syn cluster asciidoctorInnerBlock contains=asciidoctorBlockquote,asciidoctorListMarker,asciidoctorOrderedListMarker,asciidoctorCodeBlock,asciidoctorDefList,asciidoctorAdmonition,asciidoctorAdmonitionBlock
-syn cluster asciidoctorInline contains=asciidoctorItalic,asciidoctorBold,asciidoctorCode,asciidoctorBoldItalic,asciidoctorUrl,asciidoctorMacro,asciidoctorAttribute,asciidoctorInlineAnchor
+syn cluster asciidoctorInline contains=asciidoctorItalic,asciidoctorBold,asciidoctorCode,asciidoctorBoldItalic,asciidoctorUrl,asciidoctorUrlAuto,asciidoctorLink,asciidoctorAnchor,asciidoctorMacro,asciidoctorAttribute,asciidoctorInlineAnchor
 
 " really hard to use them together with all the rest 'blocks'
 " syn match asciidoctorMarkdownH1 "^\s*[[:alpha:]].\+\n=\+$" contains=@asciidoctorInline
@@ -63,15 +63,24 @@ syn sync match syncH4 grouphere NONE "^=====\s.*$"
 syn sync match syncH5 grouphere NONE "^======\s.*$"
 syn sync match syncH6 grouphere NONE "^=======\s.*$"
 
-syn match asciidoctorMacro "\a\+::\?\(\S[[:alnum:][:blank:]./\\:-]\{-}\)\?\[.\{-}\]" 
+" a Macro is a generic pattern that has no default highlight, but it could
+" contain a link/image/url/xref/mailto/etc, its syntax is
+" type::\?url[description], where description cannot be empty
+
+syn match asciidoctorMacro "\l\+::\?\S*\[.\{-}\]"  contains=asciidoctorUrl,asciidoctorLink
+syn match asciidoctorMacro "\s*\l\+://\S\+" contains=asciidoctorUrlAuto
 syn match asciidoctorAttribute "{[[:alpha:]][[:alnum:]-_:]\{-}}" 
 
-syn match asciidoctorUrlDescription "\[.\{-}\]" contained containedin=asciidoctorUrl
-syn match asciidoctorUrl "\%(http\|ftp\)s\?://\S\+\ze\%(\[.\{-}\]\)" nextgroup=asciidoctorUrlDescription
+syn match asciidoctorUrlDescription "\[[^]]\{-}\]\%(\s\|$\)" contained containedin=asciidoctorLink
+syn match asciidoctorUrlAuto "\s*\zs\%(http\|ftp\)s\?://\S\+\%(\[.\{-}\]\)\?" contained contains=asciidoctorUrl
 
 if get(g:, 'asciidoctor_syntax_conceal', 0)
-	syn region asciidoctorUrl        matchgroup=Conceal start="\%(link\|xref\|image\)::\?\(.*\[\ze[^]]\)\?" end="\]\|\[]" concealends oneline keepend skipwhite
-	syn region asciidoctorUrl        matchgroup=Conceal start="<<\%(.\{-},\s*\)\?" end=">>" concealends oneline
+	" the pattern \[\ze\%(\s*[^ ]\+\s*\)\+]\+ means: a brackets pair, inside of
+	" which at least one non-space character, possibly with with spaces
+	syn region asciidoctorLink       matchgroup=Conceal start="\%(link\|xref\|image\|mailto\):[^:].*\[\ze\%(\s*[^ ]\+\s*\)\+]\+" end="\]" concealends oneline keepend skipwhite contained
+	syn region asciidoctorLink       matchgroup=Conceal start="image::.*\[\ze\%(\s*[^ ]\+\s*\)\+]\+" end="\]" concealends oneline keepend skipwhite contained
+	syn region asciidoctorAnchor     matchgroup=Conceal start="<<\%(.\{-},\s*\)\?" end=">>" concealends oneline
+	syn region asciidoctorUrl        matchgroup=Conceal start="\%(http\|ftp\)s\?://\S\+\[\ze\%(\s*[^ ]\+\s*\)\+]\+" end="\]" contained concealends oneline keepend skipwhite contained
 
 	syn region asciidoctorBold       matchgroup=Conceal start=/\m\*\*/ end=/\*\*/ contains=@Spell concealends oneline
 	syn region asciidoctorBold       matchgroup=Conceal start=/\m\%(^\|[[:punct:][:space:]]\@<=\)\*\ze[^* ].\{-}\S/ end=/\*\%([[:punct:][:space:]]\@=\|$\)/ contains=@Spell concealends oneline
@@ -85,8 +94,10 @@ if get(g:, 'asciidoctor_syntax_conceal', 0)
 	syn region asciidoctorCode       matchgroup=Conceal start=/\m``/ end=/``/ contains=@Spell concealends oneline
 	syn region asciidoctorCode       matchgroup=Conceal start=/\m\%(^\|[[:punct:][:space:]]\@<=\)`\ze[^` ].\{-}\S/ end=/`\%([[:punct:][:space:]]\@=\|$\)/ contains=@Spell concealends oneline
 else
-	syn region asciidoctorUrl matchgroup=asciidoctorMacro start="\%(link\|xref\|image\)::\?" end="\[.\{-}\]" oneline keepend skipwhite
-	syn match asciidoctorUrl "<<.\{-}>>" 
+	syn region asciidoctorLink       start="\%(link\|xref\|image\|mailto\):[^:].*\ze\[" end="\[.\{-}\]" oneline keepend skipwhite contained
+	syn region asciidoctorLink       start="image::.*\ze\[" end="\[.\{-}\]" oneline keepend skipwhite contained
+	syn match asciidoctorUrl "\%(http\|ftp\)s\?://\S\+\ze\%(\[.\{-}\]\)" nextgroup=asciidoctorUrlDescription
+	syn match asciidoctorAnchor "<<.\{-}>>"
 
 	syn match asciidoctorBold /\%(^\|[[:punct:][:space:]]\@<=\)\*[^* ].\{-}\S\*\%([[:punct:][:space:]]\@=\|$\)/ contains=@Spell
 	" single char *b* bold
@@ -230,11 +241,11 @@ hi def link asciidoctorListingBlock          asciidoctorIndented
 hi def link asciidoctorLiteralBlock          asciidoctorIndented
 
 hi def link asciidoctorUrl                   Underlined
+hi def link asciidoctorUrlAuto               Underlined
 hi def link asciidoctorUrlDescription        Constant
 
-" hi def link asciidoctorUrlTitle              String
-
-hi def link asciidoctorMacro                 PreProc
+hi def link asciidoctorLink                  PreProc
+hi def link asciidoctorAnchor                PreProc
 hi def link asciidoctorAttribute             Identifier
 hi def link asciidoctorCode                  Constant
 hi def link asciidoctorOption                Identifier
