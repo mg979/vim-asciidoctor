@@ -78,10 +78,10 @@ syn match asciidoctorUrlAuto "\s*\zs\%(http\|ftp\)s\?://\S\+\%(\[.\{-}\]\)\?" co
 if get(g:, 'asciidoctor_syntax_conceal', 0)
 	" the pattern \[\ze\%(\s*[^ ]\+\s*\)\+]\+ means: a brackets pair, inside of
 	" which at least one non-space character, possibly with with spaces
-  syn region asciidoctorLink       matchgroup=Conceal start="\%(link\|xref\|image\|video\|mailto\):\ze[^:].*" end="\ze\[\s*\]" concealends oneline keepend skipwhite contained nextgroup=asciidoctorUrlDescription contains=asciidoctorUrl,asciidoctorFile
-  syn region asciidoctorLink       matchgroup=Conceal start="\%(video\|image\)::\ze.*" end="\ze\[\s*\]" concealends oneline keepend skipwhite contained nextgroup=asciidoctorUrlDescription contains=asciidoctorUrl,asciidoctorFile
-	syn region asciidoctorLink       matchgroup=Conceal start="\%(link\|xref\|image\|video\|mailto\):[^:].*\[\ze\%(\s*[^ ]\+\s*\)\+]\+" end="\]" concealends oneline keepend skipwhite contained
-	syn region asciidoctorLink       matchgroup=Conceal start="\%(video\|image\)::.*\[\ze\%(\s*[^ ]\+\s*\)\+]\+" end="\]" concealends oneline keepend skipwhite contained
+	syn region asciidoctorLink       matchgroup=Conceal start="\%(link\|xref\|mailto\):\ze[^:].*" end="\ze\[\s*\]" concealends oneline keepend skipwhite contained nextgroup=asciidoctorUrlDescription contains=asciidoctorUrl,asciidoctorFile
+	syn region asciidoctorLink       matchgroup=Conceal start="\%(video\|image\)::\?\ze.*" end="\ze\[.*\]" concealends oneline keepend skipwhite contained nextgroup=asciidoctorUrlDescription contains=asciidoctorFile
+	syn region asciidoctorLink       matchgroup=Conceal start="\%(link\|xref\|mailto\):[^:].*\[\ze\%(\s*[^ ]\+\s*\)\+]\+" end="\]" concealends oneline keepend skipwhite contained
+	" syn region asciidoctorLink       matchgroup=Conceal start="\%(video\|image\)::.*\[\ze\%(\s*[^ ]\+\s*\)\+]\+" end="\]" concealends oneline keepend skipwhite contained
 	syn region asciidoctorAnchor     matchgroup=Conceal start="<<\%(.\{-},\s*\)\?" end=">>" concealends oneline
 	syn region asciidoctorUrl        matchgroup=Conceal start="\%(http\|ftp\)s\?://\S\+\[\ze\%(\s*[^ ]\+\s*\)\+]\+" end="\]" contained concealends oneline keepend skipwhite contained
 
